@@ -42,17 +42,30 @@ class SequentialThinkingServer {
       throw new Error('Invalid nextThoughtNeeded: must be a boolean');
     }
 
-    return {
+    const result: ThoughtData = {
       thought: data.thought,
       thoughtNumber: data.thoughtNumber,
       totalThoughts: data.totalThoughts,
       nextThoughtNeeded: data.nextThoughtNeeded,
-      isRevision: data.isRevision as boolean | undefined,
-      revisesThought: data.revisesThought as number | undefined,
-      branchFromThought: data.branchFromThought as number | undefined,
-      branchId: data.branchId as string | undefined,
-      needsMoreThoughts: data.needsMoreThoughts as boolean | undefined,
     };
+
+    if (data.isRevision !== undefined) {
+      result.isRevision = data.isRevision as boolean;
+    }
+    if (data.revisesThought !== undefined) {
+      result.revisesThought = data.revisesThought as number;
+    }
+    if (data.branchFromThought !== undefined) {
+      result.branchFromThought = data.branchFromThought as number;
+    }
+    if (data.branchId !== undefined) {
+      result.branchId = data.branchId as string;
+    }
+    if (data.needsMoreThoughts !== undefined) {
+      result.needsMoreThoughts = data.needsMoreThoughts as boolean;
+    }
+
+    return result;
   }
 
   private formatThought(thoughtData: ThoughtData): string {
@@ -94,10 +107,11 @@ class SequentialThinkingServer {
       this.thoughtHistory.push(validatedInput);
 
       if (validatedInput.branchFromThought && validatedInput.branchId) {
-        if (!this.branches[validatedInput.branchId]) {
-          this.branches[validatedInput.branchId] = [];
+        const branchId = validatedInput.branchId;
+        if (!this.branches[branchId]) {
+          this.branches[branchId] = [];
         }
-        this.branches[validatedInput.branchId].push(validatedInput);
+        this.branches[branchId].push(validatedInput);
       }
 
       const formattedThought = this.formatThought(validatedInput);
