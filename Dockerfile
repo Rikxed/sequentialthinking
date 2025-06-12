@@ -1,24 +1,38 @@
-FROM node:22.12-alpine AS builder
-
-COPY src/sequentialthinking /app
-COPY tsconfig.json /tsconfig.json
+FROM node:18-alpine AS builder
 
 WORKDIR /app
 
-RUN --mount=type=cache,target=/root/.npm npm install
+# 复制package文件
+COPY package*.json ./
+COPY tsconfig.json ./
 
-RUN --mount=type=cache,target=/root/.npm-production npm ci --ignore-scripts --omit-dev
+# 安装依赖
+RUN npm ci
 
-FROM node:22-alpine AS release
+# 复制源代码
+COPY index.ts ./
 
-COPY --from=builder /app/dist /app/dist
-COPY --from=builder /app/package.json /app/package.json
-COPY --from=builder /app/package-lock.json /app/package-lock.json
+# 构建项目
+RUN npm run build
 
+FROM node:18-alpine AS release
+
+WORKDIR /app
+
+# 复制package文件
+COPY package*.json ./
+
+# 只安装生产依赖
+RUN npm ci --only=production
+
+# 从builder阶段复制构建结果
+COPY --from=builder /app/dist ./dist
+
+# 设置环境变量
 ENV NODE_ENV=production
 
-WORKDIR /app
+# 暴露端口（如果需要的话）
+EXPOSE 3000
 
-RUN npm ci --ignore-scripts --omit-dev
-
-ENTRYPOINT ["node", "dist/index.js"]
+# 启动命令
+CMD ["node", "dist/index.js"]
