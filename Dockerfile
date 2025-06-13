@@ -30,8 +30,8 @@ WORKDIR /app
 # 复制package文件
 COPY package*.json ./
 
-# 只安装生产依赖
-RUN npm ci --only=production && npm cache clean --force
+# 只安装生产依赖，跳过prepare脚本
+RUN npm ci --only=production --ignore-scripts && npm cache clean --force
 
 # 从builder阶段复制构建结果
 COPY --from=builder /app/dist ./dist
