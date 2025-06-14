@@ -4,15 +4,13 @@ FROM node:18-alpine AS builder
 # 设置工作目录
 WORKDIR /app
 
-# 复制package文件（利用Docker缓存层）
+# 复制所有源文件
 COPY package*.json ./
 COPY tsconfig.json ./
+COPY index.ts ./
 
 # 安装所有依赖（包括开发依赖）
 RUN npm ci
-
-# 复制源代码
-COPY index.ts ./
 
 # 构建项目
 RUN npm run build
